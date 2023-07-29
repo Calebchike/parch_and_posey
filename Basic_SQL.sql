@@ -2,9 +2,12 @@ USE parch_and_posey;
 
 /*when was the first order placed */
 SELECT occurred_at
-FROM orders
+FROM orders o
 ORDER BY 1 ASC
 LIMIT 1;
+/*Alternatively*/
+SELECT MIN(occurred_at) as first_order_date
+FROM orders o;
 /*2013-12-04 was the date the first order was placed*/
 
 
@@ -126,3 +129,15 @@ JOIN orders o
     ON a.id=o.account_id
 GROUP BY 1
 ORDER BY 1;
+
+/*what is the total number of sales rep each year that made sales */
+SELECT  YEAR(occurred_at) as year, COUNT(DISTINCT sales_rep_id) as total_sales_rep
+FROM orders o
+JOIN accounts a
+    ON a.id=o.account_id
+JOIN sales_reps s 
+    ON s.id=a.sales_rep_id
+GROUP BY 1
+ORDER BY 1;
+/*in 2013 the total sales rep was 35. in 2014 it was 42, 2015 it was 45, 2016 it was 
+50 and in 2017 13 sales rep */
