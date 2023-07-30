@@ -141,3 +141,5 @@ GROUP BY 1
 ORDER BY 1;
 /*in 2013 the total sales rep was 35. in 2014 it was 42, 2015 it was 45, 2016 it was 
 50 and in 2017 13 sales rep */
+
+
