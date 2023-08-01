@@ -147,3 +147,42 @@ WITH total_sales AS (SELECT MONTHNAME(occurred_at) as month, MONTH(occurred_at) 
 SELECT month, total_amt_usd, 
 ROUND(((total_amt_usd-LAG(total_amt_usd, 1) OVER() )/(LAG(total_amt_usd, 1) OVER() ))*100, 2) as monthly_percentage_difference
 FROM total_sales ;
+
+
+/*for the top all time customer, what percentage of the total annual amt in usd did they purchase. indicate also their annual rank*/ 
+WITH t1 AS (SELECT a.name, SUM(total_amt_usd) as total_amt_usd
+            FROM accounts a
+            JOIN orders o                     
+                ON a.id=o.account_id
+            GROUP BY 1
+            ORDER BY 2 DESC
+            LIMIT 1),
+    t2 AS (SELECT a.name, YEAR(occurred_at) as year,
+                SUM(total_amt_usd) as annual_total_amt_usd, 
+                SUM(SUM(total_amt_usd)) OVER(PARTITION BY YEAR(occurred_at)) as Parch_and_Posey_annual_amt_usd,
+                RANK() OVER(PARTITION BY year(occurred_at) ORDER BY SUM(total_amt_usd) DESC) as year_rank
+            FROM accounts a
+            JOIN orders o                     
+                ON a.id=o.account_id
+            GROUP BY 1,2
+            ORDER BY 2)
+SELECT *, (annual_total_amt_usd/Parch_and_Posey_annual_amt_usd)*100 as percentage
+FROM t2
+WHERE name IN (SELECT name
+            FROM t1);
+
+
+
+/*what are the percentage and rank for all the customers all year*/ 
+WITH 
+    t2 AS (SELECT a.name, YEAR(occurred_at) as year,
+                SUM(total_amt_usd) as annual_total_amt_usd, 
+                SUM(SUM(total_amt_usd)) OVER(PARTITION BY YEAR(occurred_at)) as Parch_and_Posey_annual_amt_usd,
+                RANK() OVER(PARTITION BY year(occurred_at) ORDER BY SUM(total_amt_usd) DESC) as year_rank
+            FROM accounts a
+            JOIN orders o                     
+                ON a.id=o.account_id
+            GROUP BY 1,2)
+SELECT *, (annual_total_amt_usd/Parch_and_Posey_annual_amt_usd)*100 as percentage
+FROM t2
+ORDER BY 2,6 desc;
